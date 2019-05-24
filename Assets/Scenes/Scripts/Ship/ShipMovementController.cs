@@ -2,20 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShipController : MonoBehaviour {
+public class ShipMovementController : MonoBehaviour {
 
     public float epsilon;
     public float acceleration;
     public float maxVelocity;
     public float rotAngle;
-    private float velocity;
     private Rigidbody2D rb2d;
-    private Vector2 orientation;
 
     void Start()
     {
         rb2d = GetComponent<Rigidbody2D>();
-        orientation = Vector2.up;
     }
 
     void Update()
@@ -27,6 +24,8 @@ public class ShipController : MonoBehaviour {
     {
         manageVelocity();
         manageAngle();
+        Debug.DrawRay(transform.position, transform.up, Color.magenta);
+        Debug.DrawRay(transform.position, rb2d.velocity.normalized, Color.yellow);
     }
 
     private void manageVelocity()
@@ -42,40 +41,31 @@ public class ShipController : MonoBehaviour {
 
         if (Input.GetKey(KeyCode.UpArrow) && rb2d.velocity.magnitude < maxVelocity)
         {
-            rb2d.AddForce(orientation * acceleration);
+            rb2d.AddForce(transform.up * acceleration);
         }
         else if (Input.GetKey(KeyCode.DownArrow) && rb2d.velocity.magnitude > 0.0)
         {
             float nextVelocity = rb2d.velocity.magnitude - acceleration * Time.fixedDeltaTime;
             if (nextVelocity > 0.0f)
             {
-                rb2d.AddForce(-orientation * acceleration);
+                rb2d.AddForce(-transform.up * acceleration);
             } 
         }
     }
 
     private void manageAngle()
     {
-        /*if (rb2d.velocity.magnitude > 0.0f)
-        {*/
-            float deltaTime = Time.fixedDeltaTime;
-            bool isChanged = false;
-            if (Input.GetKey(KeyCode.RightArrow))
-            {
-                orientation = orientation.Rotate(-rotAngle * deltaTime);
-                isChanged = true;
-            }
-            else if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                orientation = orientation.Rotate(rotAngle * deltaTime);
-                isChanged = true;
-            }
-            if (isChanged)
-            {
-                rb2d.velocity = orientation * rb2d.velocity.magnitude;
-                transform.rotation = Quaternion.LookRotation(Vector3.forward, orientation);
-            }
-        //}
+        float deltaTime = Time.fixedDeltaTime;
+        if (Input.GetKey(KeyCode.RightArrow))
+        {
+            transform.Rotate(Vector3.forward, -rotAngle * deltaTime);
+            rb2d.velocity = transform.up * rb2d.velocity.magnitude;
+        }
+        else if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            transform.Rotate(Vector3.forward, rotAngle * deltaTime);
+            rb2d.velocity = transform.up * rb2d.velocity.magnitude;
+        }
     }
 }
 
